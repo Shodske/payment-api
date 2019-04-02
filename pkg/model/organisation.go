@@ -13,10 +13,19 @@ type Organisation struct {
 
 // Method required to implement `jsonapi.MarshalReferences`.
 func (org *Organisation) GetReferences() []jsonapi.Reference {
-	panic("implement me")
+	return []jsonapi.Reference{
+		{
+			Name:         "payments",
+			Type:         "payments",
+			IsNotLoaded:  true,
+			Relationship: jsonapi.ToManyRelationship,
+		},
+	}
 }
 
 // Method required to implement `jsonapi.MarshalLinkedRelations`.
 func (org *Organisation) GetReferencedIDs() []jsonapi.ReferenceID {
-	panic("implement me")
+	// Always return an empty slice. We don't want to retrieve all payments for an organisation, as they can be quite
+	// numerous.
+	return []jsonapi.ReferenceID{}
 }
