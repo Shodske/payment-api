@@ -119,12 +119,17 @@ func (payment *Payment) GetReferences() []jsonapi.Reference {
 
 // GetReferencedIDs method required to implement `jsonapi.MarshalLinkedRelations`
 func (payment *Payment) GetReferencedIDs() []jsonapi.ReferenceID {
+	orgId := payment.OrganisationID.String()
+	if orgId == "00000000-0000-0000-0000-000000000000" {
+		return []jsonapi.ReferenceID{}
+	}
+
 	return []jsonapi.ReferenceID{
 		{
 			Name:         "organisation",
 			Type:         "organisations",
 			Relationship: jsonapi.ToOneRelationship,
-			ID:           payment.OrganisationID.String(),
+			ID:           orgId,
 		},
 	}
 }
