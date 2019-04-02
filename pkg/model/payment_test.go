@@ -17,7 +17,7 @@ func TestPayment_SetToOneReferenceID(t *testing.T) {
 		Currency             string
 		EndToEndReference    string
 		NumericReference     string
-		PaymentId            string
+		PaymentID            string
 		PaymentPurpose       string
 		PaymentScheme        string
 		PaymentType          string
@@ -61,7 +61,7 @@ func TestPayment_SetToOneReferenceID(t *testing.T) {
 				Currency:             tt.fields.Currency,
 				EndToEndReference:    tt.fields.EndToEndReference,
 				NumericReference:     tt.fields.NumericReference,
-				PaymentId:            tt.fields.PaymentId,
+				PaymentID:            tt.fields.PaymentID,
 				PaymentPurpose:       tt.fields.PaymentPurpose,
 				PaymentScheme:        tt.fields.PaymentScheme,
 				PaymentType:          tt.fields.PaymentType,
@@ -107,7 +107,7 @@ func TestPayment_GetReferences(t *testing.T) {
 		Currency             string
 		EndToEndReference    string
 		NumericReference     string
-		PaymentId            string
+		PaymentID            string
 		PaymentPurpose       string
 		PaymentScheme        string
 		PaymentType          string
@@ -144,7 +144,7 @@ func TestPayment_GetReferences(t *testing.T) {
 				Currency:             tt.fields.Currency,
 				EndToEndReference:    tt.fields.EndToEndReference,
 				NumericReference:     tt.fields.NumericReference,
-				PaymentId:            tt.fields.PaymentId,
+				PaymentID:            tt.fields.PaymentID,
 				PaymentPurpose:       tt.fields.PaymentPurpose,
 				PaymentScheme:        tt.fields.PaymentScheme,
 				PaymentType:          tt.fields.PaymentType,
@@ -191,7 +191,7 @@ func TestPayment_GetReferencedIDs(t *testing.T) {
 		Currency             string
 		EndToEndReference    string
 		NumericReference     string
-		PaymentId            string
+		PaymentID            string
 		PaymentPurpose       string
 		PaymentScheme        string
 		PaymentType          string
@@ -228,7 +228,7 @@ func TestPayment_GetReferencedIDs(t *testing.T) {
 				Currency:             tt.fields.Currency,
 				EndToEndReference:    tt.fields.EndToEndReference,
 				NumericReference:     tt.fields.NumericReference,
-				PaymentId:            tt.fields.PaymentId,
+				PaymentID:            tt.fields.PaymentID,
 				PaymentPurpose:       tt.fields.PaymentPurpose,
 				PaymentScheme:        tt.fields.PaymentScheme,
 				PaymentType:          tt.fields.PaymentType,

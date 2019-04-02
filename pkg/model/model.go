@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// Base struct for models that have a uuid as primary key. Based on `gorm.Model`, to be embedded in other models.
+// Model struct for models that have a uuid as primary key. Based on `gorm.Model`, to be embedded in other models.
 // Implements `` and
 type Model struct {
 	ID        uuid.UUID `gorm:"type:uuid;primary_key"`
@@ -15,7 +15,7 @@ type Model struct {
 	DeletedAt *time.Time `sql:"index"`
 }
 
-// Method required to implement `jsonapi.UnmarshalIdentifier`. Converts the string representation of a uuid to the
+// SetID method required to implement `jsonapi.UnmarshalIdentifier`. Converts the string representation of a uuid to the
 // internal Model representation.
 func (m *Model) SetID(id string) error {
 	if id == "" {
@@ -32,7 +32,7 @@ func (m *Model) SetID(id string) error {
 	return nil
 }
 
-// Method required to implement `jsonapi.MarshalIdentifier`. Returns a string representation of the uuid of the Model.
+// GetID method required to implement `jsonapi.MarshalIdentifier`. Returns a string representation of the uuid of the Model.
 func (m *Model) GetID() string {
 	// An empty uuid yields a string representation of only zeroes.
 	if id := m.ID.String(); id != "00000000-0000-0000-0000-000000000000" {
@@ -42,7 +42,7 @@ func (m *Model) GetID() string {
 	return ""
 }
 
-// Callback method for `gorm` package. Makes sure a uuid is set before a Model is created.
+// BeforeCreate callback method for `gorm` package. Makes sure a uuid is set before a Model is created.
 func (m *Model) BeforeCreate() error {
 	if m.DeletedAt != nil {
 		return errors.New("cannot create deleted Model")

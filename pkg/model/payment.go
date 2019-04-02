@@ -2,7 +2,6 @@ package model
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/manyminds/api2go/jsonapi"
 	"github.com/satori/go.uuid"
@@ -12,12 +11,13 @@ import (
 // AccountType type and constants.
 type AccountType int
 
+// Dummy constants that don't do anything currently.
 const (
 	BasicAccount AccountType = iota
 	PremiumAccount
 )
 
-// Struct representation of a payment. Instances of this struct can be marshaled to a json resource according to the
+// Payment struct represents a payment. Instances of this struct can be marshaled to a json resource according to the
 // json:api specification.
 type Payment struct {
 	Model `json:"-"`
@@ -29,7 +29,7 @@ type Payment struct {
 	Currency             string `json:"currency,omitempty"`
 	EndToEndReference    string `json:"end_to_end_reference,omitempty"`
 	NumericReference     string `json:"numeric_reference,omitempty"`
-	PaymentId            string `json:"payment_id,omitempty"`
+	PaymentID            string `json:"payment_id,omitempty"`
 	PaymentPurpose       string `json:"payment_purpose,omitempty"`
 	PaymentScheme        string `json:"payment_scheme,omitempty"`
 	PaymentType          string `json:"payment_type,omitempty"`
@@ -54,6 +54,7 @@ type Payment struct {
 	FX   *FX           `json:"fx,omitempty"`
 }
 
+// Party struct used in Payment struct.
 type Party struct {
 	ID                uint        `json:"-" gorm:"primary_key"`
 	AccountName       string      `json:"account_name,omitempty"`
@@ -66,6 +67,7 @@ type Party struct {
 	Name              string      `json:"name,omitempty"`
 }
 
+// Charge struct used in Payment struct.
 type Charge struct {
 	ID                      uint   `json:"-" gorm:"primary_key"`
 	BearerCode              string `json:"bearer_code,omitempty"`
@@ -77,6 +79,7 @@ type Charge struct {
 	} `json:"sender_charges,omitempty" gorm:"type:json"`
 }
 
+// FX struct used in Payment struct.
 type FX struct {
 	ID                uint        `json:"-" gorm:"primary_key"`
 	ContractReference string      `json:"contract_reference,omitempty"`
@@ -84,7 +87,8 @@ type FX struct {
 	OriginalValue     money.Money `json:"original_value,omitempty"`
 }
 
-// Method required to implement `jsonapi.UnmarshalToOneRelations`, which we need to set the organisation relationship.
+// SetToOneReferenceID method required to implement `jsonapi.UnmarshalToOneRelations`, which we need to set the
+// organisation relationship.
 func (payment *Payment) SetToOneReferenceID(name, ID string) error {
 	id, err := uuid.FromString(ID)
 	if err != nil {
@@ -95,13 +99,13 @@ func (payment *Payment) SetToOneReferenceID(name, ID string) error {
 	case "organisation":
 		payment.OrganisationID = id
 	default:
-		return errors.New(fmt.Sprintf("invalid relationship name `%s`", name))
+		return fmt.Errorf("invalid relationship name `%s`", name)
 	}
 
 	return nil
 }
 
-// Method required to implement `jsonapi.MarshalReferences`.
+// GetReferences method required to implement `jsonapi.MarshalReferences`.
 func (payment *Payment) GetReferences() []jsonapi.Reference {
 	return []jsonapi.Reference{
 		{
@@ -113,7 +117,7 @@ func (payment *Payment) GetReferences() []jsonapi.Reference {
 	}
 }
 
-// Method required to implement `jsonapi.MarshalLinkedRelations`
+// GetReferencedIDs method required to implement `jsonapi.MarshalLinkedRelations`
 func (payment *Payment) GetReferencedIDs() []jsonapi.ReferenceID {
 	return []jsonapi.ReferenceID{
 		{

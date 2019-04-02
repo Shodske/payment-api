@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/Shodske/payment-api)](https://goreportcard.com/report/github.com/Shodske/payment-api)
+
 # Payment API
 This is an example repo for a small RESTful API in which you can manage
 payments.

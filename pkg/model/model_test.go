@@ -7,7 +7,7 @@ import (
 )
 
 func TestModel_GetID(t *testing.T) {
-	baseId, _ := uuid.FromString("01234567-89ab-cdef-0123-456789abcdef")
+	baseID, _ := uuid.FromString("01234567-89ab-cdef-0123-456789abcdef")
 
 	type fields struct {
 		ID        uuid.UUID
@@ -20,7 +20,7 @@ func TestModel_GetID(t *testing.T) {
 		fields fields
 		want   string
 	}{
-		{"base", fields{ID: baseId}, "01234567-89ab-cdef-0123-456789abcdef"},
+		{"base", fields{ID: baseID}, "01234567-89ab-cdef-0123-456789abcdef"},
 		{"empty", fields{}, ""},
 	}
 	for _, tt := range tests {
@@ -77,7 +77,7 @@ func TestModel_SetID(t *testing.T) {
 }
 
 func TestModel_BeforeCreate(t *testing.T) {
-	baseId, _ := uuid.FromString("01234567-89ab-cdef-0123-456789abcdef")
+	baseID, _ := uuid.FromString("01234567-89ab-cdef-0123-456789abcdef")
 
 	type fields struct {
 		ID        uuid.UUID
@@ -90,8 +90,8 @@ func TestModel_BeforeCreate(t *testing.T) {
 		fields  fields
 		wantErr bool
 	}{
-		{"base", fields{baseId, time.Time{}, time.Time{}, nil}, false},
-		{"deleted", fields{baseId, time.Time{}, time.Time{}, &time.Time{}}, true},
+		{"base", fields{baseID, time.Time{}, time.Time{}, nil}, false},
+		{"deleted", fields{baseID, time.Time{}, time.Time{}, &time.Time{}}, true},
 		{"empty", fields{}, false},
 	}
 	for _, tt := range tests {
