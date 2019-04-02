@@ -36,7 +36,7 @@ func (m *Model) SetID(id string) error {
 func (m *Model) GetID() string {
 	// An empty uuid yields a string representation of only zeroes.
 	if id := m.ID.String(); id != "00000000-0000-0000-0000-000000000000" {
-		return id;
+		return id
 	}
 
 	return ""
