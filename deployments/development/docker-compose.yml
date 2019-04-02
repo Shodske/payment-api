@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  payment:
+    image: golang:1.12
+    environment:
+      - PORT=${PORT:-80}
+      - DB_HOST=${DB_HOST:-postgres}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_USERNAME=${DB_USERNAME:-payment-api}
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - DB_DATABASE=${DB_DATABASE:-api}
+    ports:
+      - ${DOCKER_PORT:-8000}:${PORT:-80}
+    volumes:
+      - gopath:/go
+      - gocache:/root/.cache
+      - ../..:/opt/payment-api
+    working_dir: /opt/payment-api
+    command: go run ./cmd/payment-api
+
+  postgres:
+    image: postgres:11
+    environment:
+      - POSTGRES_USER=${DB_USERNAME:-payment-api}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-secret}
+      - POSTGRES_DB=${DB_DATABASE:-api}
+    ports:
+      - ${DOCKER_DB_PORT:-5432}:5432
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+
+volumes:
+  gopath:
+  gocache:
+  postgresdata:
