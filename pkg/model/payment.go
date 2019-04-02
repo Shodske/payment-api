@@ -2,6 +2,8 @@ package model
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"github.com/manyminds/api2go/jsonapi"
 	"github.com/satori/go.uuid"
 	"google.golang.org/genproto/googleapis/type/money"
@@ -9,6 +11,7 @@ import (
 
 // AccountType type and constants.
 type AccountType int
+
 const (
 	BasicAccount AccountType = iota
 	PremiumAccount
@@ -83,15 +86,41 @@ type FX struct {
 
 // Method required to implement `jsonapi.UnmarshalToOneRelations`, which we need to set the organisation relationship.
 func (payment *Payment) SetToOneReferenceID(name, ID string) error {
-	panic("implement me")
+	id, err := uuid.FromString(ID)
+	if err != nil {
+		return err
+	}
+
+	switch name {
+	case "organisation":
+		payment.OrganisationID = id
+	default:
+		return errors.New(fmt.Sprintf("invalid relationship name `%s`", name))
+	}
+
+	return nil
 }
 
 // Method required to implement `jsonapi.MarshalReferences`.
 func (payment *Payment) GetReferences() []jsonapi.Reference {
-	panic("implement me")
+	return []jsonapi.Reference{
+		{
+			Name:         "organisation",
+			Type:         "organisations",
+			IsNotLoaded:  false,
+			Relationship: jsonapi.ToOneRelationship,
+		},
+	}
 }
 
 // Method required to implement `jsonapi.MarshalLinkedRelations`
 func (payment *Payment) GetReferencedIDs() []jsonapi.ReferenceID {
-	panic("implement me")
+	return []jsonapi.ReferenceID{
+		{
+			Name:         "organisation",
+			Type:         "organisations",
+			Relationship: jsonapi.ToOneRelationship,
+			ID:           payment.OrganisationID.String(),
+		},
+	}
 }
