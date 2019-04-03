@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/Shodske/payment-api/pkg/model"
+	"github.com/Shodske/payment-api/pkg/source"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/manyminds/api2go"
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -31,6 +35,13 @@ func main() {
 	if err = conn.Close(); err != nil {
 		log.Fatal(err)
 	}
+
+	log.Print("initialising api...")
+	api := initAPI()
+
+	port := os.Getenv("PORT")
+	log.Printf("server listening on port %s", port)
+	log.Fatal(http.ListenAndServe(":"+port, api.Handler()))
 }
 
 // Open a `gorm.DB` database connection, which can be used to migrate the database tables and execute CRUD actions on
@@ -60,4 +71,27 @@ func openDatabaseConnection() (*gorm.DB, error) {
 	}
 
 	return conn, err
+}
+
+// Initialise the API with required middleware and registered resources.
+func initAPI() *api2go.API {
+	api := api2go.NewAPI("v0")
+	// For every request open a database connection.
+	api.UseMiddleware(func(ctx api2go.APIContexter, _ http.ResponseWriter, r *http.Request) {
+		conn, err := openDatabaseConnection()
+		if err != nil {
+			return
+		}
+		ctx.Set("db", conn)
+
+		// Whenever the request is done, close the database connection.
+		go func(conn *gorm.DB, ctx context.Context) {
+			<-ctx.Done()
+			conn.Close()
+		}(conn, r.Context())
+	})
+
+	api.AddResource(&model.Organisation{}, &source.OrganisationSource{})
+
+	return api
 }

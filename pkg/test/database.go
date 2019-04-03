@@ -57,6 +57,15 @@ func NewTestDatabase() (*gorm.DB, error) {
 
 // Create all database tables.
 func migrate(db *gorm.DB) error {
+	// First drop all tables, so we don't have residual data that can cause errors.
+	db.DropTableIfExists(
+		&model.Organisation{},
+		&model.Party{},
+		&model.Charge{},
+		&model.FX{},
+		&model.Payment{},
+	)
+
 	return db.AutoMigrate(
 		&model.Organisation{},
 		&model.Party{},
@@ -69,9 +78,23 @@ func migrate(db *gorm.DB) error {
 // Populate the database with test data.
 func populate(db *gorm.DB) error {
 	for _, org := range organisationFixtures {
+		deleted := org.DeletedAt
+		org.DeletedAt = nil
 		if err := db.Create(org).Error; err != nil {
 			return err
 		}
+		// Make sure the fixtures are updated to correctly represent the database.
+		db.Where(org).First(org)
+
+		if deleted == nil {
+			continue
+		}
+
+		// Make sure the organisation is deleted.
+		if err := db.Delete(org).Error; err != nil {
+			return err
+		}
+		org.DeletedAt = deleted
 	}
 
 	return nil

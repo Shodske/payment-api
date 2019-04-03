@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestOrganisationSource_Create(t *testing.T) {
@@ -101,14 +102,11 @@ func TestOrganisationSource_FindAll(t *testing.T) {
 func TestOrganisationSource_PaginatedFindAll(t *testing.T) {
 	req := test.NewMockedRequest()
 	firstReq := test.NewMockedRequest()
-	firstReq.QueryParams["page[number]"] = []string{"1"}
-	firstReq.QueryParams["page[size]"] = []string{"1"}
+	firstReq.QueryParams = map[string][]string{"page[number]": {"1"}, "page[size]": {"1"}}
 	secondReq := test.NewMockedRequest()
-	secondReq.QueryParams["page[number]"] = []string{"2"}
-	secondReq.QueryParams["page[size]"] = []string{"1"}
+	secondReq.QueryParams = map[string][]string{"page[number]": {"2"}, "page[size]": {"1"}}
 	oorReq := test.NewMockedRequest()
-	oorReq.QueryParams["page[number]"] = []string{"100"}
-	oorReq.QueryParams["page[size]"] = []string{"100"}
+	oorReq.QueryParams = map[string][]string{"page[number]": {"100"}, "page[size]": {"100"}}
 
 	orgs := test.GetOrganisationFixtures(false);
 	count := len(orgs)
@@ -140,7 +138,7 @@ func TestOrganisationSource_PaginatedFindAll(t *testing.T) {
 		{"first-page", &OrganisationSource{}, args{*firstReq}, uint(count), firstRes, false},
 		{"second-page", &OrganisationSource{}, args{*secondReq}, uint(count), secondRes, false},
 		{"out-of-range", &OrganisationSource{}, args{*oorReq}, uint(count), emptyRes, false},
-		{"not-paginated", &OrganisationSource{}, args{*req}, uint(count), nil, true},
+		{"not-paginated", &OrganisationSource{}, args{*req}, 0, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -182,7 +180,7 @@ func TestOrganisationSource_FindOne(t *testing.T) {
 	}
 
 	for i, org := range orgs {
-		res := api2go.Response{
+		res := &api2go.Response{
 			Code: http.StatusOK,
 			Res:  org,
 		}
@@ -202,6 +200,76 @@ func TestOrganisationSource_FindOne(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("OrganisationSource.FindOne() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestOrganisationSource_Update(t *testing.T) {
+	req := test.NewMockedRequest()
+	org := test.GetOrganisationFixtures(false)[0]
+	deletedOrg := test.GetOrganisationFixtures(true)[0]
+
+	updateData := &model.Organisation{
+		Model: model.Model{ID: org.ID},
+		Name:  "Updated Organisation",
+	}
+	updatedOrg := *org
+	updatedOrg.Name = "Updated Organisation"
+
+	res := &api2go.Response{
+		Code: http.StatusOK,
+		Res:  &updatedOrg,
+	}
+
+	noIDData := interface{}(&model.Organisation{
+		Name: "Updated Organisation",
+	})
+
+	delUpdateData := interface{}(&model.Organisation{
+		Model: model.Model{ID: deletedOrg.ID},
+		Name:  "Updated Organisation",
+	})
+
+	type args struct {
+		obj interface{}
+		req api2go.Request
+	}
+	tests := []struct {
+		name    string
+		src     *OrganisationSource
+		args    args
+		want    api2go.Responder
+		wantErr bool
+	}{
+		{"base", &OrganisationSource{}, args{updateData, *req}, res, false},
+		{"no-id", &OrganisationSource{}, args{noIDData, *req}, nil, true},
+		{"deleted", &OrganisationSource{}, args{delUpdateData, *req}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			src := &OrganisationSource{}
+			got, err := src.Update(tt.args.obj, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("OrganisationSource.Update() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if got != nil && tt.want != nil {
+				// Updated at should be changed.
+				gotRes := got.Result().(*model.Organisation)
+				wantRes := tt.want.Result().(*model.Organisation)
+				if reflect.DeepEqual(gotRes.UpdatedAt, wantRes.UpdatedAt) {
+					t.Errorf("Organisation.UpdatedAt should be updated, got %v, want %v", gotRes.UpdatedAt, wantRes.UpdatedAt)
+				}
+
+				// set updated at to an empty time, so the next compare won't fail.
+				gotRes.UpdatedAt = time.Time{}
+				wantRes.UpdatedAt = time.Time{}
+			}
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("OrganisationSource.Update() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -232,7 +300,7 @@ func TestOrganisationSource_Delete(t *testing.T) {
 	}
 
 	for i, org := range orgs {
-		res := api2go.Response{
+		res := &api2go.Response{
 			Code: http.StatusNoContent,
 		}
 		tests = append(
@@ -251,62 +319,6 @@ func TestOrganisationSource_Delete(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("OrganisationSource.Delete() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestOrganisationSource_Update(t *testing.T) {
-	req := test.NewMockedRequest()
-	org := test.GetOrganisationFixtures(false)[0]
-	deletedOrg := test.GetOrganisationFixtures(true)[0]
-
-	updateData := interface{}(&model.Organisation{
-		Model: model.Model{ID: org.ID},
-		Name: "Updated Organisation",
-	})
-	updatedOrg := *org
-	updatedOrg.Name = "Updated Organisation"
-
-	res := api2go.Response{
-		Code: http.StatusOK,
-		Res:  &updatedOrg,
-	}
-
-	noIDData := interface{}(&model.Organisation{
-		Name: "Updated Organisation",
-	})
-
-	delUpdateData := interface{}(&model.Organisation{
-		Model: model.Model{ID: deletedOrg.ID},
-		Name: "Updated Organisation",
-	})
-
-	type args struct {
-		obj interface{}
-		req api2go.Request
-	}
-	tests := []struct {
-		name    string
-		src     *OrganisationSource
-		args    args
-		want    api2go.Responder
-		wantErr bool
-	}{
-		{"base", &OrganisationSource{}, args{updateData, *req}, res, false},
-		{"no-id", &OrganisationSource{}, args{noIDData, *req}, nil, true},
-		{"deleted", &OrganisationSource{}, args{delUpdateData, *req}, nil, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			src := &OrganisationSource{}
-			got, err := src.Update(tt.args.obj, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("OrganisationSource.Update() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("OrganisationSource.Update() = %v, want %v", got, tt.want)
 			}
 		})
 	}
