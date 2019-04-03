@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/manyminds/api2go/jsonapi"
 	"github.com/satori/go.uuid"
-	"google.golang.org/genproto/googleapis/type/money"
 )
 
 // AccountType type and constants.
@@ -25,7 +24,8 @@ type Payment struct {
 	OrganisationID uuid.UUID    `json:"-" gorm:"type:uuid REFERENCES organisations(id)"`
 	Organisation   Organisation `json:"-" gorm:"association_autoupdate:false"`
 
-	Amount               string `json:"amount,omitempty"`
+	Amount               string `json:"amount,omitempty" gorm:"type:decimal(1000,2)"`
+	//Amount               string `json:"amount,omitempty"`
 	Currency             string `json:"currency,omitempty"`
 	EndToEndReference    string `json:"end_to_end_reference,omitempty"`
 	NumericReference     string `json:"numeric_reference,omitempty"`
@@ -69,22 +69,31 @@ type Party struct {
 
 // Charge struct used in Payment struct.
 type Charge struct {
-	ID                      uint   `json:"-" gorm:"primary_key"`
-	BearerCode              string `json:"bearer_code,omitempty"`
-	ReceiverChargesAmount   string `json:"receiver_charges_amount,omitempty"`
-	ReceiverChargesCurrency string `json:"receiver_charges_currency,omitempty"`
-	SenderCharges           []struct {
-		Amount   string `json:"amount,omitempty"`
-		Currency string `json:"currency,omitempty"`
-	} `json:"sender_charges,omitempty" gorm:"type:json"`
+	ID                      uint              `json:"-" gorm:"primary_key"`
+	BearerCode              string            `json:"bearer_code,omitempty"`
+	ReceiverChargesAmount   string            `json:"receiver_charges_amount,omitempty" gorm:"type:decimal(1000,2)"`
+	//ReceiverChargesAmount   string            `json:"receiver_charges_amount,omitempty"`
+	ReceiverChargesCurrency string            `json:"receiver_charges_currency,omitempty"`
+	SenderCharges           []*CurrencyAmount `json:"sender_charges,omitempty" gorm:"foreignkey:ChargeID"`
+}
+
+type CurrencyAmount struct {
+	ID       uint   `json:"-" gorm:"primary_key"`
+	ChargeID uint   `json:"-" gorm:"type:integer REFERENCES charges(id)"`
+	Amount   string `json:"amount,omitempty" gorm:"type:decimal(1000,2)"`
+	//Amount   string `json:"amount,omitempty"`
+	Currency string `json:"currency,omitempty"`
 }
 
 // FX struct used in Payment struct.
 type FX struct {
-	ID                uint        `json:"-" gorm:"primary_key"`
-	ContractReference string      `json:"contract_reference,omitempty"`
-	ExchangeRate      string      `json:"exchange_rate,omitempty"`
-	OriginalValue     money.Money `json:"original_value,omitempty"`
+	ID                uint   `json:"-" gorm:"primary_key"`
+	ContractReference string `json:"contract_reference,omitempty"`
+	ExchangeRate      string `json:"exchange_rate,omitempty" gorm:"type:decimal(10,5)"`
+	//ExchangeRate      string `json:"exchange_rate,omitempty"`
+	OriginalAmount    string `json:"original_amount,omitempty" gorm:"type:decimal(1000,2)"`
+	//OriginalAmount    string `json:"original_amount,omitempty"`
+	OriginalCurrency  string `json:"original_currency,omitempty"`
 }
 
 // SetToOneReferenceID method required to implement `jsonapi.UnmarshalToOneRelations`, which we need to set the

@@ -27,6 +27,7 @@ func main() {
 		&model.Organisation{},
 		&model.Party{},
 		&model.Charge{},
+		&model.CurrencyAmount{},
 		&model.FX{},
 		&model.Payment{},
 	)
@@ -68,6 +69,7 @@ func openDatabaseConnection() (*gorm.DB, error) {
 	if conn != nil {
 		// TODO Set LogMode based on the current log level, which should be set through an env variable.
 		conn.LogMode(true)
+		conn = conn.Set("gorm:auto_preload", true)
 	}
 
 	return conn, err
@@ -92,6 +94,7 @@ func initAPI() *api2go.API {
 	})
 
 	api.AddResource(&model.Organisation{}, &source.OrganisationSource{})
+	api.AddResource(&model.Payment{}, &source.PaymentSource{})
 
 	return api
 }

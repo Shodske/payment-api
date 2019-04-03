@@ -3,10 +3,8 @@ package source
 import (
 	"errors"
 	"github.com/Shodske/payment-api/pkg/model"
-	"github.com/jinzhu/gorm"
 	"github.com/manyminds/api2go"
 	"net/http"
-	"strconv"
 )
 
 // OrganisationSource struct that implements the different interfaces for handling CRUD actions on Organisation Models.
@@ -21,17 +19,12 @@ func (src *OrganisationSource) Create(obj interface{}, req api2go.Request) (api2
 		return nil, api2go.NewHTTPError(errors.New("invalid type"), "invalid type", http.StatusConflict)
 	}
 
-	db, ok := req.Context.Get("db")
-	if !ok {
-		return nil, errors.New("no database connection")
+	db, err := getDatabase(req)
+	if err != nil {
+		return nil, err
 	}
 
-	conn, ok := db.(*gorm.DB)
-	if !ok {
-		return nil, errors.New("error accessing database")
-	}
-
-	if err := conn.Create(org).Error; err != nil {
+	if err := db.Create(org).Error; err != nil {
 		return nil, err
 	}
 
@@ -41,18 +34,13 @@ func (src *OrganisationSource) Create(obj interface{}, req api2go.Request) (api2
 // FindAll method required to implement `api2go.FindAll`. Implementing this interface will enable the URI:
 // GET /organisations
 func (src *OrganisationSource) FindAll(req api2go.Request) (api2go.Responder, error) {
-	db, ok := req.Context.Get("db")
-	if !ok {
-		return nil, errors.New("no database connection")
-	}
-
-	conn, ok := db.(*gorm.DB)
-	if !ok {
-		return nil, errors.New("error accessing database")
+	db, err := getDatabase(req)
+	if err != nil {
+		return nil, err
 	}
 
 	orgs := make([]*model.Organisation, 0)
-	conn.Find(&orgs)
+	db.Find(&orgs)
 
 	return &api2go.Response{Res: orgs, Code: http.StatusOK}, nil
 }
@@ -60,57 +48,21 @@ func (src *OrganisationSource) FindAll(req api2go.Request) (api2go.Responder, er
 // PaginatedFindAll method required to implement `api2go.PaginatedFindAll`. Implementing this interface will enable the URI:
 // GET /organisations?page[number]=<number>&page[size]=<size>
 func (src *OrganisationSource) PaginatedFindAll(req api2go.Request) (uint, api2go.Responder, error) {
-	numberQuery, ok := req.QueryParams["page[number]"]
-	if !ok {
-		return 0, nil, api2go.NewHTTPError(
-			errors.New("could not find `page[number]` in query"),
-			"could not find `page[number]` in query",
-			http.StatusBadRequest,
-		)
-	}
-
-	number, err := strconv.ParseInt(numberQuery[0], 10, 64)
+	number, size, err := extractPaginationQuery(req)
 	if err != nil {
-		return 0, nil, api2go.NewHTTPError(
-			err,
-			"invalid value for `page[number]` in query",
-			http.StatusBadRequest,
-		)
+		return 0, nil, err
 	}
 
-	sizeQuery, ok := req.QueryParams["page[size]"]
-	if !ok {
-		return 0, nil, api2go.NewHTTPError(
-			errors.New("could not find `page[size]` in query"),
-			"could not find `page[size]` in query",
-			http.StatusBadRequest,
-		)
-	}
-
-	size, err := strconv.ParseInt(sizeQuery[0], 10, 64)
+	db, err := getDatabase(req)
 	if err != nil {
-		return 0, nil, api2go.NewHTTPError(
-			err,
-			"invalid value for `page[size]` in query",
-			http.StatusBadRequest,
-		)
-	}
-
-	db, ok := req.Context.Get("db")
-	if !ok {
-		return 0, nil, errors.New("no database connection")
-	}
-
-	conn, ok := db.(*gorm.DB)
-	if !ok {
-		return 0, nil, errors.New("error accessing database")
+		return 0, nil, err
 	}
 
 	var count uint
-	conn.Model(&model.Organisation{}).Count(&count)
+	db.Model(&model.Organisation{}).Count(&count)
 
 	orgs := make([]*model.Organisation, 0)
-	conn.Limit(size).Offset((number - 1) * size).Find(&orgs)
+	db.Limit(size).Offset((number - 1) * size).Find(&orgs)
 
 	return count, &api2go.Response{Res: orgs, Code: http.StatusOK}, nil
 }
@@ -118,14 +70,9 @@ func (src *OrganisationSource) PaginatedFindAll(req api2go.Request) (uint, api2g
 // FindOne method required to implement `api2go.ResourceGetter`. Implementing this interface will enable the URI:
 // GET /organisations/:organisationID
 func (src *OrganisationSource) FindOne(id string, req api2go.Request) (api2go.Responder, error) {
-	db, ok := req.Context.Get("db")
-	if !ok {
-		return nil, errors.New("no database connection")
-	}
-
-	conn, ok := db.(*gorm.DB)
-	if !ok {
-		return nil, errors.New("error accessing database")
+	db, err := getDatabase(req)
+	if err != nil {
+		return nil, err
 	}
 
 	org := &model.Organisation{}
@@ -133,7 +80,7 @@ func (src *OrganisationSource) FindOne(id string, req api2go.Request) (api2go.Re
 		return nil, api2go.NewHTTPError(err, "invalid id", http.StatusBadRequest)
 	}
 
-	if err := conn.Where(org).First(org).Error; err != nil {
+	if err := db.Where(org).First(org).Error; err != nil {
 		return nil, api2go.NewHTTPError(err, "could not find organisations resource", http.StatusNotFound)
 	}
 
@@ -152,21 +99,16 @@ func (src *OrganisationSource) Update(obj interface{}, req api2go.Request) (api2
 		return nil, api2go.NewHTTPError(errors.New("missing id"), "missing id", http.StatusConflict)
 	}
 
-	db, ok := req.Context.Get("db")
-	if !ok {
-		return nil, errors.New("no database connection")
-	}
-
-	conn, ok := db.(*gorm.DB)
-	if !ok {
-		return nil, errors.New("error accessing database")
+	db, err := getDatabase(req)
+	if err != nil {
+		return nil, err
 	}
 
 	org := &model.Organisation{Model: model.Model{ID: orgData.ID}}
-	if err := conn.Where(org).First(org).Error; err != nil {
+	if err := db.Where(org).First(org).Error; err != nil {
 		return nil, err
 	}
-	if err := conn.Model(org).Update(orgData).Error; err != nil {
+	if err := db.Model(org).Update(orgData).Error; err != nil {
 		return nil, err
 	}
 
@@ -180,14 +122,9 @@ func (src *OrganisationSource) Delete(id string, req api2go.Request) (api2go.Res
 		return nil, api2go.NewHTTPError(errors.New("invalid id"), "invalid id", http.StatusBadRequest)
 	}
 
-	db, ok := req.Context.Get("db")
-	if !ok {
-		return nil, errors.New("no database connection")
-	}
-
-	conn, ok := db.(*gorm.DB)
-	if !ok {
-		return nil, errors.New("error accessing database")
+	db, err := getDatabase(req)
+	if err != nil {
+		return nil, err
 	}
 
 	org := &model.Organisation{}
@@ -195,11 +132,11 @@ func (src *OrganisationSource) Delete(id string, req api2go.Request) (api2go.Res
 		return nil, api2go.NewHTTPError(err, "invalid id", http.StatusBadRequest)
 	}
 
-	if err := conn.Where(org).First(org).Error; err != nil {
+	if err := db.Where(org).First(org).Error; err != nil {
 		return nil, api2go.NewHTTPError(err, "could not find organisations resource", http.StatusNotFound)
 	}
 
-	if err := conn.Delete(org).Error; err != nil {
+	if err := db.Delete(org).Error; err != nil {
 		return nil, err
 	}
 

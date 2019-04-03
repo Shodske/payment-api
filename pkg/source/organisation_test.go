@@ -3,7 +3,6 @@ package source
 import (
 	"github.com/Shodske/payment-api/pkg/model"
 	"github.com/Shodske/payment-api/pkg/test"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/manyminds/api2go"
 	"github.com/satori/go.uuid"
 	"net/http"
@@ -108,7 +107,7 @@ func TestOrganisationSource_PaginatedFindAll(t *testing.T) {
 	oorReq := test.NewMockedRequest()
 	oorReq.QueryParams = map[string][]string{"page[number]": {"100"}, "page[size]": {"100"}}
 
-	orgs := test.GetOrganisationFixtures(false);
+	orgs := test.GetOrganisationFixtures(false)
 	count := len(orgs)
 
 	firstRes := &api2go.Response{
@@ -222,14 +221,14 @@ func TestOrganisationSource_Update(t *testing.T) {
 		Res:  &updatedOrg,
 	}
 
-	noIDData := interface{}(&model.Organisation{
+	noIDData := &model.Organisation{
 		Name: "Updated Organisation",
-	})
+	}
 
-	delUpdateData := interface{}(&model.Organisation{
+	delUpdateData := &model.Organisation{
 		Model: model.Model{ID: deletedOrg.ID},
 		Name:  "Updated Organisation",
-	})
+	}
 
 	type args struct {
 		obj interface{}
