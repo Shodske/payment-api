@@ -5,7 +5,7 @@ servers:
       host:
         default: localhost
       port:
-        default: 8000
+        default: "8000"
 info:
   title: Simple Payment API
   description: |
@@ -463,9 +463,9 @@ components:
                   properties:
                     type:
                       type: string
-                      pattern: "^organisations$"
-                      example: "organisations"
+                      pattern: ^organisations$
+                      example: organisations
                     id:
                       type: string
                       format: uuid
-                      examle: "e5dbc976-5d51-487e-a414-c1ca517ee6bc"
+                      example: e5dbc976-5d51-487e-a414-c1ca517ee6bc
