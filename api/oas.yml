@@ -1,0 +1,471 @@
+openapi: 3.0.0
+servers:
+  - url: http://{host}:{port}/v0
+    variables:
+      host:
+        default: localhost
+      port:
+        default: 8000
+info:
+  title: Simple Payment API
+  description: |
+    This is an example simple payment API. This specification is based on the
+    <a href="https://jsonapi.org/" target="_blank">json:api</a> specification.
+  version: "0.1.0"
+tags:
+  - name: organisations
+    description: Endpoints for organisations resources.
+  - name: payments
+    description: Endpoints for payments resources.
+paths:
+  /organisations:
+    get:
+      tags:
+        - organisations
+      summary: retrieve organisations
+      description: |
+        Retrieve organisations. Results can optionally be paginated.
+      parameters:
+        - in: query
+          name: page[number]
+          description: used to select page when paginating results
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: page[size]
+          description: used to select page size when paginating results
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: all the organisations retrieved
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Organisation'
+    post:
+      tags:
+        - organisations
+      summary: create an organisation
+      description: Creates a new organisation
+      responses:
+        '201':
+          description: organisation created
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Organisation'
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/Organisation'
+
+  /organisations/{organisation_id}:
+    get:
+      tags:
+        - organisations
+      summary: retrieve one organisation
+      description: |
+        Retrieve one organisations by id.
+      parameters:
+        - in: path
+          name: organisation_id
+          description: id of organisation to retrieve
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: organisation retrieved
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Organisation'
+    patch:
+      tags:
+        - organisations
+      summary: update an organisation
+      description: Updates the organisation with the supplied properties.
+      parameters:
+        - in: path
+          name: organisation_id
+          description: id of organisation to update
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: organisation updated
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Organisation'
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/Organisation'
+    delete:
+      tags:
+        - organisations
+      summary: delete an organisation
+      description: Delete the organisation with the supplied id.
+      parameters:
+        - in: path
+          name: organisation_id
+          description: id of organisation to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: organisation deleted
+
+  /payments:
+    get:
+      tags:
+        - payments
+      summary: retrieve payments
+      description: |
+        Retrieve payments. Results can optionally be paginated.
+      parameters:
+        - in: query
+          name: page[number]
+          description: used to select page when paginating results
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: page[size]
+          description: used to select page size when paginating results
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: all the payments retrieved
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Payment'
+    post:
+      tags:
+        - payments
+      summary: create an payment
+      description: Creates a new payment
+      responses:
+        '201':
+          description: payment created
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Payment'
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/Payment'
+
+  /payments/{payment_id}:
+    get:
+      tags:
+        - payments
+      summary: retrieve one payment
+      description: |
+        Retrieve one payments by id.
+      parameters:
+        - in: path
+          name: payment_id
+          description: id of payment to retrieve
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: payment retrieved
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Payment'
+    patch:
+      tags:
+        - payments
+      summary: update an payment
+      description: Updates the payment with the supplied properties.
+      parameters:
+        - in: path
+          name: payment_id
+          description: id of payment to update
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: payment updated
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Payment'
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/Payment'
+    delete:
+      tags:
+        - payments
+      summary: delete an payment
+      description: Delete the payment with the supplied id.
+      parameters:
+        - in: path
+          name: payment_id
+          description: id of payment to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: payment deleted
+
+components:
+  schemas:
+    Organisation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        type:
+          type: string
+          pattern: ^organisations$
+          example: organisations
+        attributes:
+          type: object
+          properties:
+            name:
+              type: string
+              example: Your organisation name
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 743d5b63-8e6f-432e-a8fa-c5d8d2ee5fcb
+        type:
+          type: string
+          pattern: ^payments$
+          example: payments
+        attributes:
+          type: object
+          properties:
+            amount:
+              type: string
+              example: "79.99"
+            currency:
+              type: string
+              example: "GBP"
+            end_to_end_reference:
+              type: string
+              example: "Wil piano Jan"
+            numeric_reference:
+              type: string
+              example: "1002001"
+            payment_id:
+              type: string
+              example: "123456789012345678"
+            payment_purpose:
+              type: string
+              example: "Paying for goods/services"
+            payment_scheme:
+              type: string
+              example: "FPS"
+            payment_type:
+              type: string
+              example: "Credit"
+            processing_date:
+              type: string
+              example: "2017-01-18"
+            reference:
+              type: string
+              example: "Payment for Em's piano lessons"
+            scheme_payment_sub_type:
+              type: string
+              example: "InternetBanking"
+            scheme_payment_type:
+              type: string
+              example: "ImmediatePayment"
+
+            beneficiary_party:
+              type: object
+              properties:
+                account_name:
+                  type: string
+                  example: "W Owens"
+                account_number:
+                  type: string
+                  example: "31926819"
+                account_number_code:
+                  type: string
+                  example: "BBAN"
+                account_type:
+                  type: number
+                  example: 0
+                address:
+                  type: string
+                  example: "1 The Beneficiary Localtown SE2"
+                bank_id:
+                  type: string
+                  example: "403000"
+                bank_id_code:
+                  type: string
+                  example: "GBDSC"
+                name:
+                  type: string
+                  example: "Wilfred Jeremiah Owens"
+
+            debtor_party:
+              type: object
+              properties:
+                account_name:
+                  type: string
+                  example:  "EJ Brown Black"
+                account_number:
+                  type: string
+                  example:  "GB29XABC10161234567801"
+                account_number_code:
+                  type: string
+                  example:  "IBAN"
+                address:
+                  type: string
+                  example:  "10 Debtor Crescent Sourcetown NE1"
+                bank_id:
+                  type: string
+                  example:  "203301"
+                bank_id_code:
+                  type: string
+                  example:  "GBDSC"
+                name:
+                  type: string
+                  example:  "Emelia Jane Brown"
+
+            sponsor_party:
+              type: object
+              properties:
+                account_number:
+                  type: string
+                  example: "56781234"
+                bank_id:
+                  type: string
+                  example: "123123"
+                bank_id_code:
+                  type: string
+                  example: "GBDSC"
+
+            charges_information:
+              type: object
+              properties:
+                bearer_code:
+                  type: string
+                  example: "SHAR"
+                sender_charges:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      amount:
+                        type: string
+                        example: "5.00"
+                      currency:
+                        type: string
+                        example: "GBP"
+                receiver_charges_amount:
+                  type: string
+                  example: "1.00"
+                receiver_charges_currency:
+                  type: string
+                  example: "USD"
+
+            fx:
+              type: object
+              properties:
+                contract_reference:
+                  type: string
+                  example: "FX123"
+                exchange_rate:
+                  type: string
+                  example: "2.00000"
+                original_amount:
+                  type: string
+                  example: "200.42"
+                original_currency:
+                  type: string
+                  example: "USD"
+
+        relationships:
+          type: object
+          properties:
+            organisation:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      pattern: "^organisations$"
+                      example: "organisations"
+                    id:
+                      type: string
+                      format: uuid
+                      examle: "e5dbc976-5d51-487e-a414-c1ca517ee6bc"
