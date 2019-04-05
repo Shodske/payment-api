@@ -78,19 +78,27 @@ func openDatabaseConnection() (*gorm.DB, error) {
 // Initialise the API with required middleware and registered resources.
 func initAPI() *api2go.API {
 	api := api2go.NewAPI("v0")
+
+	// Allow cross origin requests
+	api.UseMiddleware(func(_ api2go.APIContexter, res http.ResponseWriter, _ *http.Request) {
+		res.Header().Set("Access-Control-Allow-Origin", "*")
+		res.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE")
+		res.Header().Set("Access-Control-Allow-Headers", "*")
+	})
+
 	// For every request open a database connection.
-	api.UseMiddleware(func(ctx api2go.APIContexter, _ http.ResponseWriter, r *http.Request) {
-		conn, err := openDatabaseConnection()
+	api.UseMiddleware(func(ctx api2go.APIContexter, _ http.ResponseWriter, req *http.Request) {
+		db, err := openDatabaseConnection()
 		if err != nil {
 			return
 		}
-		ctx.Set("db", conn)
+		ctx.Set("db", db)
 
 		// Whenever the request is done, close the database connection.
 		go func(conn *gorm.DB, ctx context.Context) {
 			<-ctx.Done()
 			conn.Close()
-		}(conn, r.Context())
+		}(db, req.Context())
 	})
 
 	api.AddResource(&model.Organisation{}, &source.OrganisationSource{})
