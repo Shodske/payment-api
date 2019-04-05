@@ -2,7 +2,6 @@ package source
 
 import (
 	"github.com/Shodske/payment-api/pkg/model"
-	"github.com/Shodske/payment-api/pkg/test"
 	"github.com/manyminds/api2go"
 	"github.com/satori/go.uuid"
 	"net/http"
@@ -12,8 +11,8 @@ import (
 )
 
 func TestPaymentSource_Create(t *testing.T) {
-	req := test.NewMockedRequest()
-	payments := test.GetPaymentFixtures(false)
+	req := NewMockedRequest()
+	payments := GetPaymentFixtures(false)
 
 	// For ease of use, we copy a payment from the fixtures and use that.
 	basePayment := *payments[0]
@@ -63,11 +62,11 @@ func TestPaymentSource_Create(t *testing.T) {
 }
 
 func TestPaymentSource_FindAll(t *testing.T) {
-	req := test.NewMockedRequest()
+	req := NewMockedRequest()
 
 	baseRes := &api2go.Response{
 		Code: http.StatusOK,
-		Res:  test.GetPaymentFixtures(false),
+		Res:  GetPaymentFixtures(false),
 	}
 
 	type args struct {
@@ -98,15 +97,15 @@ func TestPaymentSource_FindAll(t *testing.T) {
 }
 
 func TestPaymentSource_PaginatedFindAll(t *testing.T) {
-	req := test.NewMockedRequest()
-	firstReq := test.NewMockedRequest()
+	req := NewMockedRequest()
+	firstReq := NewMockedRequest()
 	firstReq.QueryParams = map[string][]string{"page[number]": {"1"}, "page[size]": {"2"}}
-	secondReq := test.NewMockedRequest()
+	secondReq := NewMockedRequest()
 	secondReq.QueryParams = map[string][]string{"page[number]": {"2"}, "page[size]": {"2"}}
-	oorReq := test.NewMockedRequest()
+	oorReq := NewMockedRequest()
 	oorReq.QueryParams = map[string][]string{"page[number]": {"100"}, "page[size]": {"100"}}
 
-	payments := test.GetPaymentFixtures(false)
+	payments := GetPaymentFixtures(false)
 	count := len(payments)
 
 	firstRes := &api2go.Response{
@@ -157,10 +156,10 @@ func TestPaymentSource_PaginatedFindAll(t *testing.T) {
 }
 
 func TestPaymentSource_FindOne(t *testing.T) {
-	req := test.NewMockedRequest()
+	req := NewMockedRequest()
 
-	payments := test.GetPaymentFixtures(false)
-	deletedPayments := test.GetPaymentFixtures(true)
+	payments := GetPaymentFixtures(false)
+	deletedPayments := GetPaymentFixtures(true)
 
 	type args struct {
 		id  string
@@ -204,9 +203,9 @@ func TestPaymentSource_FindOne(t *testing.T) {
 }
 
 func TestPaymentSource_Update(t *testing.T) {
-	req := test.NewMockedRequest()
-	payment := test.GetPaymentFixtures(false)[0]
-	deletedOrg := test.GetPaymentFixtures(true)[0]
+	req := NewMockedRequest()
+	payment := GetPaymentFixtures(false)[0]
+	deletedOrg := GetPaymentFixtures(true)[0]
 
 	updateData := &model.Payment{
 		Model:     model.Model{ID: payment.ID},
@@ -274,10 +273,10 @@ func TestPaymentSource_Update(t *testing.T) {
 }
 
 func TestPaymentSource_Delete(t *testing.T) {
-	req := test.NewMockedRequest()
+	req := NewMockedRequest()
 
-	payments := test.GetPaymentFixtures(false)
-	deletedPayments := test.GetPaymentFixtures(true)
+	payments := GetPaymentFixtures(false)
+	deletedPayments := GetPaymentFixtures(true)
 
 	type args struct {
 		id  string

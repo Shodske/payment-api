@@ -1,4 +1,4 @@
-package test
+package source
 
 import "github.com/manyminds/api2go"
 

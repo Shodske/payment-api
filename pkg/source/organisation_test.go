@@ -2,7 +2,6 @@ package source
 
 import (
 	"github.com/Shodske/payment-api/pkg/model"
-	"github.com/Shodske/payment-api/pkg/test"
 	"github.com/manyminds/api2go"
 	"github.com/satori/go.uuid"
 	"net/http"
@@ -12,7 +11,7 @@ import (
 )
 
 func TestOrganisationSource_Create(t *testing.T) {
-	req := test.NewMockedRequest()
+	req := NewMockedRequest()
 
 	baseOrg := &model.Organisation{
 		Name: "Base Organisation",
@@ -64,11 +63,11 @@ func TestOrganisationSource_Create(t *testing.T) {
 }
 
 func TestOrganisationSource_FindAll(t *testing.T) {
-	req := test.NewMockedRequest()
+	req := NewMockedRequest()
 
 	baseRes := &api2go.Response{
 		Code: http.StatusOK,
-		Res:  test.GetOrganisationFixtures(false),
+		Res:  GetOrganisationFixtures(false),
 	}
 
 	type args struct {
@@ -99,15 +98,15 @@ func TestOrganisationSource_FindAll(t *testing.T) {
 }
 
 func TestOrganisationSource_PaginatedFindAll(t *testing.T) {
-	req := test.NewMockedRequest()
-	firstReq := test.NewMockedRequest()
+	req := NewMockedRequest()
+	firstReq := NewMockedRequest()
 	firstReq.QueryParams = map[string][]string{"page[number]": {"1"}, "page[size]": {"1"}}
-	secondReq := test.NewMockedRequest()
+	secondReq := NewMockedRequest()
 	secondReq.QueryParams = map[string][]string{"page[number]": {"2"}, "page[size]": {"1"}}
-	oorReq := test.NewMockedRequest()
+	oorReq := NewMockedRequest()
 	oorReq.QueryParams = map[string][]string{"page[number]": {"100"}, "page[size]": {"100"}}
 
-	orgs := test.GetOrganisationFixtures(false)
+	orgs := GetOrganisationFixtures(false)
 	count := len(orgs)
 
 	firstRes := &api2go.Response{
@@ -158,10 +157,10 @@ func TestOrganisationSource_PaginatedFindAll(t *testing.T) {
 }
 
 func TestOrganisationSource_FindOne(t *testing.T) {
-	req := test.NewMockedRequest()
+	req := NewMockedRequest()
 
-	orgs := test.GetOrganisationFixtures(false)
-	deletedOrgs := test.GetOrganisationFixtures(true)
+	orgs := GetOrganisationFixtures(false)
+	deletedOrgs := GetOrganisationFixtures(true)
 
 	type args struct {
 		ID  string
@@ -205,9 +204,9 @@ func TestOrganisationSource_FindOne(t *testing.T) {
 }
 
 func TestOrganisationSource_Update(t *testing.T) {
-	req := test.NewMockedRequest()
-	org := test.GetOrganisationFixtures(false)[0]
-	deletedOrg := test.GetOrganisationFixtures(true)[0]
+	req := NewMockedRequest()
+	org := GetOrganisationFixtures(false)[0]
+	deletedOrg := GetOrganisationFixtures(true)[0]
 
 	updateData := &model.Organisation{
 		Model: model.Model{ID: org.ID},
@@ -275,10 +274,10 @@ func TestOrganisationSource_Update(t *testing.T) {
 }
 
 func TestOrganisationSource_Delete(t *testing.T) {
-	req := test.NewMockedRequest()
+	req := NewMockedRequest()
 
-	orgs := test.GetOrganisationFixtures(false)
-	deletedOrgs := test.GetOrganisationFixtures(true)
+	orgs := GetOrganisationFixtures(false)
+	deletedOrgs := GetOrganisationFixtures(true)
 
 	type args struct {
 		id  string

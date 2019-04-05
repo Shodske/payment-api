@@ -75,6 +75,7 @@ type Charge struct {
 	SenderCharges           []*CurrencyAmount `json:"sender_charges,omitempty" gorm:"foreignkey:ChargeID"`
 }
 
+// CurrencyAmount used in Charge struct.
 type CurrencyAmount struct {
 	ID       uint   `json:"-" gorm:"primary_key"`
 	ChargeID uint   `json:"-" gorm:"type:integer REFERENCES charges(id)"`
